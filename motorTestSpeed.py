@@ -5,12 +5,15 @@ from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QTimer, QTime, QDate, Qt
 import pyqtgraph as pg
 import random  
+from scipy.interpolate import make_interp_spline
+import numpy as np
 
 class MotorControlApp(QWidget):
     def __init__(self):
         super().__init__()
-
-        self.current_frequency = 0  
+        self.graph_widget = pg.PlotWidget()
+        self.speed_stages = [0, 60, 90, 120, 150, 180]  
+        self.current_stage = 0  
         self.initUI()
         self.serial_port = serial.Serial('COM13', 9600, timeout=1)
         self.timer = QTimer(self)
@@ -43,7 +46,7 @@ class MotorControlApp(QWidget):
         self.start_button = QPushButton('Start Motor', self)
         self.stop_button = QPushButton('Stop Motor', self)
         self.status_label = QLabel('Status: Disconnected', self)
-        self.frequency_label = QLabel(f'Frequency: {self.current_frequency} Hz', self)
+        self.frequency_label = QLabel(f'Frequency: 0 Hz', self)
 
         self.start_button.clicked.connect(self.start_motor)
         self.stop_button.clicked.connect(self.stop_motor)
@@ -165,37 +168,55 @@ class MotorControlApp(QWidget):
             }
         """)
 
-
     def start_motor(self):
         if self.serial_port.is_open:
             self.serial_port.write(b's')
             self.status_label.setText('Status: Motor Starting...')
+            self.timer.start(1000) 
         else:
             self.status_label.setText('Status: Port Error')
 
     def stop_motor(self):
         if self.serial_port.is_open:
             self.serial_port.write(b'c')
-            self.status_label.setText('Status: Motor Stopping...')
+            self.status_label.setText('Status: Motor Stopped.')
+            self.timer.stop() 
+            self.current_stage = 0 
         else:
             self.status_label.setText('Status: Port Error')
-
+    
     def check_for_response(self):
         if self.serial_port.in_waiting:
             response = self.serial_port.readline().decode().strip()
-            self.status_label.setText(f'Status: {response}')
-            self.update_graph(random.randint(0, 180))  
+            current_speed = self.speed_stages[self.current_stage]
+            speed_percentage = (self.current_stage / (len(self.speed_stages) - 1)) * 100
 
-            self.current_frequency = random.randint(1, 100) 
+            self.status_label.setText(f'Status: Speed: {current_speed} RPM ({speed_percentage:.0f}%)')
+            self.update_graph(current_speed)
+            self.current_stage += 1
+            if self.current_stage >= len(self.speed_stages):
+                self.timer.stop()  
+            self.current_frequency = random.randint(1, 100)
             self.frequency_label.setText(f'Frequency: {self.current_frequency} Hz')
+
 
     def update_graph(self, speed):
         if len(self.graph_data) > 100: 
             self.graph_data.pop(0)
         self.graph_data.append(speed)
-        self.graph_widget.clear()
-        self.graph_widget.plot(self.graph_data, pen=pg.mkPen(color=(255, 0, 0), width=3))
 
+        self.graph_widget.clear()
+
+        if len(self.graph_data) > 3:  
+            x = np.linspace(0, len(self.graph_data) - 1, len(self.graph_data))
+            x_smooth = np.linspace(x.min(), x.max(), 500)  
+            
+            spline = make_interp_spline(x, self.graph_data, k=3)  
+            y_smooth = spline(x_smooth)
+
+            self.graph_widget.plot(x_smooth, y_smooth, pen=pg.mkPen(color=(255, 0, 0), width=3))
+        else:
+            self.graph_widget.plot(self.graph_data, pen=pg.mkPen(color=(255, 0, 0), width=3))
     def update_time(self):
         current_time = QTime.currentTime()
         current_date = QDate.currentDate()
@@ -215,3 +236,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MotorControlApp()
     sys.exit(app.exec_())
+
