@@ -1,4 +1,4 @@
-# MotorSpeedControl
+# Motor Speed Control
 This is a Python application built using PyQt5 and PyQtGraph to control a motor via an Arduino and display real-time speed data in a graph. The application also displays the current time and frequency.
 
 ## Features
