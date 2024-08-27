@@ -231,7 +231,6 @@ class MotorControlApp(QWidget):
     def closeEvent(self, event):
         self.serial_port.close()
         event.accept()
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MotorControlApp()
