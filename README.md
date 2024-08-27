@@ -28,7 +28,7 @@ This is a Python application built using PyQt5 and PyQtGraph to control a motor 
    cd MotorControlApp
 
 2. **Install Python packages:**
-  ```bash
+   ```bash
    pip install pyqt5 pyqtgraph scipy numpy pyserial
 
 3. **Run the Application:**
