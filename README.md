@@ -3,7 +3,7 @@ This is a Python application built using PyQt5 and PyQtGraph to control a motor 
 
 ## Features
 
-- **Motor Control:** Start and stop the motor using GUI buttons.(Speed runs from 0% to 100%, with a 20% increase each 3 seconds respectively)
+- **Motor Control:** Start and stop the motor using GUI buttons.(Speed runs from 0% to 100%, with a 20% increase each 2 seconds respectively)
 - **Real-Time Speed Graph:** Displays motor speed over time with smooth cubic interpolation for a better visual experience.
 - **Status Updates:** Displays the current speed and percentage of the motor speed stages.
 - **Time Display:** Shows the current time and date in a formatted label.
