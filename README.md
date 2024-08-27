@@ -35,4 +35,5 @@ This is a Python application built using PyQt5 and PyQtGraph to control a motor 
    ```bash
     python motorTestSpeed.py
 
-![Screenshot of UI](pics/ARRClogo.png)
+## Screenshot of Application
+![Screenshot of UI](pics/motorControlScreenshot.png)
