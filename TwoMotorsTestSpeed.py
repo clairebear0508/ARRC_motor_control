@@ -7,9 +7,10 @@ import pyqtgraph as pg
 import random  
 from scipy.interpolate import make_interp_spline
 import numpy as np
-#motor 1 pin: D9
-#motor 2 pin: D10
+
 class MotorControlApp(QWidget):
+    #and tailwind css
+    
     def __init__(self):
         super().__init__()
         self.graph_widget = pg.PlotWidget()
@@ -175,7 +176,7 @@ class MotorControlApp(QWidget):
     def start_motor(self):
         if self.serial_port.is_open:
             self.serial_port.write(b's')
-            self.status_label.setText('Status: Motor Starting...')
+            self.status_label.setText('Status: Motors Starting...')
             self.timer.start(1000) 
         else:
             self.status_label.setText('Status: Port Error')
@@ -183,7 +184,7 @@ class MotorControlApp(QWidget):
     def stop_motor(self):
         if self.serial_port.is_open:
             self.serial_port.write(b'c')
-            self.status_label.setText('Status: Motor Stopped.')
+            self.status_label.setText('Status: Motors Stopped.')
             self.timer.stop() 
             self.current_stage = 0 
         else:
@@ -192,17 +193,22 @@ class MotorControlApp(QWidget):
     def check_for_response(self):
         if self.serial_port.in_waiting:
             response = self.serial_port.readline().decode().strip()
-            current_speed = self.speed_stages[self.current_stage]
+            
+            # Get current speed for both motors
+            current_speed_motor1 = self.speed_stages[self.current_stage]
+            current_speed_motor2 = self.speed_stages[self.current_stage]  
+            
             speed_percentage = (self.current_stage / (len(self.speed_stages) - 1)) * 100
 
-            self.status_label.setText(f'Status: Speed: {current_speed} RPM ({speed_percentage:.0f}%)')
-            self.update_graph(current_speed)
+            self.status_label.setText(f'Status: Motor 1: {current_speed_motor1} RPM, Motor 2: {current_speed_motor2} RPM ({speed_percentage:.0f}%)')
+            
+            self.update_graph(current_speed_motor1, current_speed_motor2)
+            
             self.current_stage += 1
             if self.current_stage >= len(self.speed_stages):
-                self.timer.stop()  
+                self.timer.stop()
             self.current_frequency = random.randint(1, 100)
             self.frequency_label.setText(f'Frequency: {self.current_frequency} Hz')
-
 
     def update_graph(self, speed_motor1, speed_motor2):
         if len(self.graph_data_motor1) > 100: 
@@ -218,8 +224,8 @@ class MotorControlApp(QWidget):
         # motor 1 plot 
         if len(self.graph_data_motor1) > 3:  
             x1 = np.linspace(0, len(self.graph_data_motor1) - 1, len(self.graph_data_motor1))
-            x_smooth1 = np.linspace(x1.min(), x1.max(), 500)  
-            spline1 = make_interp_spline(x1, self.graph_data_motor1, k=3)  
+            x_smooth1 = np.linspace(x1.min(), x1.max(), 500)
+            spline1 = make_interp_spline(x1, self.graph_data_motor1, k=3)
             y_smooth1 = spline1(x_smooth1)
             self.graph_widget.plot(x_smooth1, y_smooth1, pen=pg.mkPen(color=(255, 0, 0), width=3), name="Motor 1")
         else:
@@ -228,8 +234,8 @@ class MotorControlApp(QWidget):
         # motor 2 plot
         if len(self.graph_data_motor2) > 3:  
             x2 = np.linspace(0, len(self.graph_data_motor2) - 1, len(self.graph_data_motor2))
-            x_smooth2 = np.linspace(x2.min(), x2.max(), 500)  
-            spline2 = make_interp_spline(x2, self.graph_data_motor2, k=3)  
+            x_smooth2 = np.linspace(x2.min(), x2.max(), 500)
+            spline2 = make_interp_spline(x2, self.graph_data_motor2, k=3)
             y_smooth2 = spline2(x_smooth2)
             self.graph_widget.plot(x_smooth2, y_smooth2, pen=pg.mkPen(color=(0, 0, 255), width=3), name="Motor 2")
         else:
@@ -238,19 +244,10 @@ class MotorControlApp(QWidget):
     def update_time(self):
         current_time = QTime.currentTime()
         current_date = QDate.currentDate()
-
-        time_str = current_time.toString('hh:mm:ss')
-        am_pm = 'AM' if current_time.hour() < 12 else 'PM'
-
-        date_str = current_date.toString('yyyy/M/d')
-
-        self.time_label.setText(f"{am_pm} {time_str} {date_str}")
-
-    def closeEvent(self, event):
-        self.serial_port.close()
-        event.accept()
+        self.time_label.setText(current_time.toString('HH:mm:ss'))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MotorControlApp()
     sys.exit(app.exec_())
+    

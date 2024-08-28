@@ -7,7 +7,7 @@ import pyqtgraph as pg
 import random  
 from scipy.interpolate import make_interp_spline
 import numpy as np
-
+        
 class MotorControlApp(QWidget):
     def __init__(self):
         super().__init__()
