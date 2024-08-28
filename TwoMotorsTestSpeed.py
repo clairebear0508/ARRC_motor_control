@@ -7,7 +7,8 @@ import pyqtgraph as pg
 import random  
 from scipy.interpolate import make_interp_spline
 import numpy as np
-
+#motor 1 pin: D9
+#motor 2 pin: D10
 class MotorControlApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -25,6 +26,9 @@ class MotorControlApp(QWidget):
         self.time_timer.start(1000)  
 
         self.update_time()  
+
+        self.graph_data_motor1 = []  
+        self.graph_data_motor2 = []
 
     def initUI(self):
         self.setWindowIcon(QIcon('pics/ARRClogo.png')) 
@@ -200,29 +204,43 @@ class MotorControlApp(QWidget):
             self.frequency_label.setText(f'Frequency: {self.current_frequency} Hz')
 
 
-    def update_graph(self, speed):
-        if len(self.graph_data) > 100: 
-            self.graph_data.pop(0)
-        self.graph_data.append(speed)
+    def update_graph(self, speed_motor1, speed_motor2):
+        if len(self.graph_data_motor1) > 100: 
+            self.graph_data_motor1.pop(0)
+        self.graph_data_motor1.append(speed_motor1)
+        
+        if len(self.graph_data_motor2) > 100: 
+            self.graph_data_motor2.pop(0)
+        self.graph_data_motor2.append(speed_motor2)
 
         self.graph_widget.clear()
 
-        if len(self.graph_data) > 3:  
-            x = np.linspace(0, len(self.graph_data) - 1, len(self.graph_data))
-            x_smooth = np.linspace(x.min(), x.max(), 500)  
-            
-            spline = make_interp_spline(x, self.graph_data, k=3)  
-            y_smooth = spline(x_smooth)
-
-            self.graph_widget.plot(x_smooth, y_smooth, pen=pg.mkPen(color=(255, 0, 0), width=3))
+        # motor 1 plot 
+        if len(self.graph_data_motor1) > 3:  
+            x1 = np.linspace(0, len(self.graph_data_motor1) - 1, len(self.graph_data_motor1))
+            x_smooth1 = np.linspace(x1.min(), x1.max(), 500)  
+            spline1 = make_interp_spline(x1, self.graph_data_motor1, k=3)  
+            y_smooth1 = spline1(x_smooth1)
+            self.graph_widget.plot(x_smooth1, y_smooth1, pen=pg.mkPen(color=(255, 0, 0), width=3), name="Motor 1")
         else:
-            self.graph_widget.plot(self.graph_data, pen=pg.mkPen(color=(255, 0, 0), width=3))
+            self.graph_widget.plot(self.graph_data_motor1, pen=pg.mkPen(color=(255, 0, 0), width=3), name="Motor 1")
+
+        # motor 2 plot
+        if len(self.graph_data_motor2) > 3:  
+            x2 = np.linspace(0, len(self.graph_data_motor2) - 1, len(self.graph_data_motor2))
+            x_smooth2 = np.linspace(x2.min(), x2.max(), 500)  
+            spline2 = make_interp_spline(x2, self.graph_data_motor2, k=3)  
+            y_smooth2 = spline2(x_smooth2)
+            self.graph_widget.plot(x_smooth2, y_smooth2, pen=pg.mkPen(color=(0, 0, 255), width=3), name="Motor 2")
+        else:
+            self.graph_widget.plot(self.graph_data_motor2, pen=pg.mkPen(color=(0, 0, 255), width=3), name="Motor 2")
+
     def update_time(self):
         current_time = QTime.currentTime()
         current_date = QDate.currentDate()
 
         time_str = current_time.toString('hh:mm:ss')
-        am_pm = 'AM' if current_time.hour() < 12 else 'PM'\
+        am_pm = 'AM' if current_time.hour() < 12 else 'PM'
 
         date_str = current_date.toString('yyyy/M/d')
 
@@ -231,6 +249,7 @@ class MotorControlApp(QWidget):
     def closeEvent(self, event):
         self.serial_port.close()
         event.accept()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MotorControlApp()
