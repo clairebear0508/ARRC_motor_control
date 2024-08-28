@@ -7,13 +7,13 @@ import pyqtgraph as pg
 import random  
 from scipy.interpolate import make_interp_spline
 import numpy as np
-        
+
 class MotorControlApp(QWidget):
     def __init__(self):
         super().__init__()
         self.graph_widget = pg.PlotWidget()
         self.speed_stages = [0, 60, 90, 120, 150, 180]  
-        self.current_stage = 0  
+        self.current_stage = 0 
         self.initUI()
         self.serial_port = serial.Serial('COM13', 9600, timeout=1)
         self.timer = QTimer(self)
