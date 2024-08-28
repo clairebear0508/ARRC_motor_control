@@ -22,10 +22,10 @@ This is a Python application built using PyQt5 and PyQtGraph to control a motor 
 
 ## Arduino
 
--  using Skywalker 30A V2
+- using Skywalker 30A V2
   - White wires: D9 / D11
   - Black wires: GND
--  Serial port: 9600
+- Serial port: 9600
   - Start: 's'
   - Close: 'c'  
 
